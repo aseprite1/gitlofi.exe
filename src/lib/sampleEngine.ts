@@ -66,7 +66,7 @@ export async function createSampleKit(
     const path = resolveSamplePath(slot, preset)
     if (!path) return null
 
-    const drumGain = new Tone.Gain(0.75).connect(output)
+    const drumGain = new Tone.Gain(0.975).connect(output)
     const buffer = new Tone.ToneAudioBuffer(path)
     players.push(drumGain as unknown as Tone.Player)
 
@@ -77,7 +77,7 @@ export async function createSampleKit(
       dayName: slot.dayName,
       trigger: (velocity: number, time: number) => {
         if (buffer.loaded) {
-          const velGain = new Tone.Gain(velocity * 0.8).connect(drumGain)
+          const velGain = new Tone.Gain(velocity).connect(drumGain)
           const source = new Tone.BufferSource(buffer).connect(velGain)
           source.start(time)
           source.onended = () => { source.dispose(); velGain.dispose() }
@@ -117,13 +117,13 @@ export async function createBackgroundLayer(
   const reverbNode = new Tone.Reverb({ decay: 4, wet: 0.35 }).connect(output)
   disposables.push(reverbNode)
 
-  const musicGain = new Tone.Gain(0.55).connect(reverbNode)
+  const musicGain = new Tone.Gain(1.1).connect(reverbNode)
   disposables.push(musicGain)
 
-  const vinylGain = new Tone.Gain(0.15).connect(output)
+  const vinylGain = new Tone.Gain(0.325).connect(output)
   disposables.push(vinylGain)
 
-  const bassGain = new Tone.Gain(0.45).connect(reverbNode)
+  const bassGain = new Tone.Gain(0.91).connect(reverbNode)
   disposables.push(bassGain)
 
   const fullPath = getMusicLoopPath(selectedKit.layers['full'] ?? '')

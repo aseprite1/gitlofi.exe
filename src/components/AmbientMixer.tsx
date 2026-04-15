@@ -27,15 +27,22 @@ export function AmbientMixer({ minimized, onMinimize, zIndex, onFocus, bpm }: Pr
   })
 
   const playersRef = useRef<Record<string, PlayerRef>>({})
+  const enabledRef = useRef(enabled)
+  const volumesRef = useRef(volumes)
+  enabledRef.current = enabled
+  volumesRef.current = volumes
+
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null)
   const playClick = useClickSound()
 
   useEffect(() => {
     return () => {
       for (const ref of Object.values(playersRef.current)) {
+        ref.player.stop()
         ref.player.dispose()
         ref.gain.dispose()
       }
+      playersRef.current = {}
     }
   }, [])
 
@@ -50,42 +57,44 @@ export function AmbientMixer({ minimized, onMinimize, zIndex, onFocus, bpm }: Pr
 
   const toggle = useCallback(async (id: string) => {
     playClick()
-    const isOn = !!enabled[id]
+    const isOn = enabledRef.current[id]
 
     if (isOn) {
-      // Turn OFF
       const ref = playersRef.current[id]
-      if (ref) ref.gain.gain.value = 0
+      if (ref) {
+        ref.gain.gain.value = 0
+        ref.player.stop()
+      }
       setEnabled(prev => ({ ...prev, [id]: false }))
       return
     }
 
-    // Turn ON
     setEnabled(prev => ({ ...prev, [id]: true }))
 
     const ref = playersRef.current[id]
+    const vol = (volumesRef.current[id] ?? 50) / 100 * 3
+
     if (ref) {
-      ref.gain.gain.value = (volumes[id] ?? 50) / 100
-      if (ref.player.state !== 'started') ref.player.start()
+      ref.gain.gain.value = vol
+      ref.player.start()
       return
     }
 
-    // First time — load
     const layer = AMBIENT_LAYERS.find(l => l.id === id)!
     await Tone.start()
-    const gain = new Tone.Gain((volumes[id] ?? 50) / 100).toDestination()
+    const gain = new Tone.Gain(vol).toDestination()
     const player = new Tone.Player({ url: layer.path, loop: true }).connect(gain)
     await Tone.loaded()
     player.playbackRate = bpm / layer.bpm
     player.start()
     playersRef.current[id] = { player, gain, originalBpm: layer.bpm }
-  }, [enabled, volumes, bpm, playClick])
+  }, [bpm, playClick])
 
   const changeVolume = useCallback((id: string, val: number) => {
     setVolumes(prev => ({ ...prev, [id]: val }))
     const ref = playersRef.current[id]
     if (ref) {
-      ref.gain.gain.value = val / 100
+      ref.gain.gain.value = val / 100 * 3
     }
   }, [])
 
