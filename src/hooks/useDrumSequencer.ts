@@ -9,7 +9,7 @@ export function useDrumSequencer(pattern: SequencerPattern | null, languageFamil
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentStep, setCurrentStep] = useState(-1)
   const [bpm, setBpmState] = useState(80)
-  const [volume, setVolumeState] = useState(0.8)
+  const [volume, setVolumeState] = useState(0.7)
   const [loading, setLoading] = useState(false)
   const [activeKit, setActiveKit] = useState<MusicKit | null>(null)
   const [activeVinyl, setActiveVinyl] = useState<string | null>(null)
@@ -34,7 +34,7 @@ export function useDrumSequencer(pattern: SequencerPattern | null, languageFamil
 
   useEffect(() => {
     if (channelRef.current) {
-      channelRef.current.volume.value = volume > 0 ? 20 * Math.log10(volume) : -Infinity
+      channelRef.current.volume.value = volume > 0 ? 20 * Math.log10(volume * 0.7) : -Infinity
     }
   }, [volume])
 
@@ -66,7 +66,7 @@ export function useDrumSequencer(pattern: SequencerPattern | null, languageFamil
     const meter = new Tone.Meter({ smoothing: 0.8 })
     const channel = new Tone.Channel().toDestination()
     channel.connect(meter)
-    channel.volume.value = volume > 0 ? 20 * Math.log10(volume) : -Infinity
+    channel.volume.value = volume > 0 ? 20 * Math.log10(volume * 0.7) : -Infinity
     channelRef.current = channel
     meterRef.current = meter
 
