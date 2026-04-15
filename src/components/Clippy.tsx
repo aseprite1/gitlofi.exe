@@ -99,7 +99,7 @@ const styles: Record<string, React.CSSProperties> = {
   bubbleTail: {
     position: 'absolute',
     bottom: -6,
-    right: 24,
+    right: 50,
     width: 0,
     height: 0,
     borderLeft: '6px solid transparent',
@@ -107,7 +107,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderTop: '6px solid #c0c0c0',
   },
   clippy: {
-    width: 80,
+    width: 120,
     height: 'auto',
     cursor: 'pointer',
     imageRendering: 'auto',
