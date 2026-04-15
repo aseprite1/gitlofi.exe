@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gitlofi.exe — GitHub Lo-Fi Beat Generator</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      // Detect in-app WebView (KakaoTalk, Instagram, Facebook, etc.) and redirect to external browser
+      (function() {
+        var ua = navigator.userAgent || '';
+        var isWebView = /KAKAOTALK|Instagram|FBAN|FBAV|Line|twitter|snapchat/i.test(ua);
+        if (isWebView) {
+          var url = location.href;
+          // iOS: Safari URL scheme
+          if (/iPhone|iPad|iPod/i.test(ua)) {
+            location.href = 'x-safari-' + url;
+            setTimeout(function() {
+              // fallback: show message
+              document.write('<html><body style="background:#c4b89c;color:#5c4a32;font-family:sans-serif;padding:40px;text-align:center"><h2>Open in browser</h2><p>This app doesn\'t work in in-app browsers.</p><p>Tap the <b>⋯</b> menu and select <b>"Open in Safari"</b> or <b>"Open in Chrome"</b></p><br><a href="'+url+'" style="color:#c87941;font-size:18px">'+url+'</a><br><br><p style="color:#888">Copy the link and paste it in your browser</p></body></html>');
+            }, 2000);
+          }
+          // Android: intent
+          else if (/Android/i.test(ua)) {
+            location.href = 'intent://' + url.replace(/https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+            setTimeout(function() {
+              document.write('<html><body style="background:#c4b89c;color:#5c4a32;font-family:sans-serif;padding:40px;text-align:center"><h2>Open in browser</h2><p>This app doesn\'t work in in-app browsers.</p><p>Tap the <b>⋮</b> menu and select <b>"Open in Chrome"</b></p><br><a href="'+url+'" style="color:#c87941;font-size:18px">'+url+'</a><br><br><p style="color:#888">Copy the link and paste it in your browser</p></body></html>');
+            }, 2000);
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <!-- CRT barrel distortion SVG filter -->
+    <svg style="position:absolute;width:0;height:0">
+      <defs>
+        <filter id="crt-warp">
+          <feFlood flood-color="transparent" result="bg"/>
+          <feTurbulence type="turbulence" baseFrequency="0.0001" numOctaves="1" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+          <feComponentTransfer in="SourceGraphic" result="barrel">
+            <feFuncR type="gamma" amplitude="1.02" exponent="1" offset="-0.01"/>
+            <feFuncG type="gamma" amplitude="1" exponent="1" offset="0"/>
+            <feFuncB type="gamma" amplitude="1.02" exponent="1" offset="0.01"/>
+          </feComponentTransfer>
+        </filter>
+      </defs>
+    </svg>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

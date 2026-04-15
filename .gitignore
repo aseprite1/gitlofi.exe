@@ -1,0 +1,9 @@
+node_modules
+dist
+output
+*.local
+.vercel
+tsconfig.tsbuildinfo
+Lo-Fi Hip-Hop/
+public/samples/
+.claude/

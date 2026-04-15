@@ -1,0 +1,185 @@
+@import '98.css';
+@import url('https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap');
+
+:root {
+  --font-dot: 'Silkscreen', cursive;
+  --lofi-bg: #c4b89c;
+  --lofi-warm: #d4c4a8;
+  --lofi-cream: #f0e6d0;
+  --lofi-brown: #8b7355;
+  --lofi-dark: #5c4a32;
+  --lofi-orange: #c87941;
+  --lofi-green: #6b8f5e;
+  --lofi-green-dim: #4a6b3e;
+  --lofi-amber: #d4a030;
+  --lofi-led: #7ec850;
+  --cell-size: 13px;
+  --cell-gap: 2px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: inherit;
+}
+
+button, a, [role="button"], input[type="range"] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='32' viewBox='0 0 12 20'%3E%3Cpath d='M1 2L1 14L4 11L6.5 16L8 15.5L5.5 10.5L9 10.5L1 2Z' fill='white' stroke='black' stroke-width='0.8'/%3E%3C/svg%3E") 0 0, pointer;
+}
+
+body {
+  background: var(--lofi-bg);
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  min-height: 100vh;
+  font-size: 12px;
+  color: #000;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='32' viewBox='0 0 12 20'%3E%3Cpath d='M0 0L0 17L4 13L7 19L9 18L6 12L11 12Z' fill='white' stroke='black' stroke-width='1'/%3E%3C/svg%3E") 0 0, auto;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 8px 36px;
+}
+
+/* duplicate removal — flicker applied via crt-screen */
+
+/* Override 98.css title bar to warm gradient */
+.title-bar {
+  background: linear-gradient(90deg, var(--lofi-brown), var(--lofi-orange)) !important;
+}
+
+/* Warm window backgrounds */
+.window {
+  background: var(--lofi-cream) !important;
+}
+
+/* Warm sunken areas */
+.sunken-panel {
+  background: #e8dcc4 !important;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar { width: 16px; height: 16px; }
+::-webkit-scrollbar-track { background: var(--lofi-warm); }
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border: 2px outset #dfdfdf;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes blink-led {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 0.97; }
+  50% { opacity: 1; }
+}
+
+@keyframes noise {
+  0% { background-position: 0 0; }
+  25% { background-position: -50px -50px; }
+  50% { background-position: 50px 25px; }
+  75% { background-position: -25px 50px; }
+  100% { background-position: 0 0; }
+}
+
+body { overflow-x: hidden; }
+
+/* Scanlines */
+.crt-scanlines .crt-scanlines-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 10000;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.05) 0px,
+    rgba(0, 0, 0, 0.05) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* Vignette */
+.crt-vignette .crt-vignette-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 10001;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(0, 0, 0, 0.15) 75%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+}
+
+/* Flicker */
+.crt-flicker #root {
+  animation: flicker 4s infinite;
+}
+
+/* RGB Shift */
+.crt-rgb-shift {
+  filter: url(#crt-warp);
+}
+
+/* Static Noise */
+.crt-noise .crt-noise-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 10002;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  animation: noise 0.3s steps(4) infinite;
+}
+
+/* Dot Mask */
+.crt-dot-mask .crt-dot-mask-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 10003;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03) 0px,
+    rgba(0, 255, 0, 0.03) 1px,
+    rgba(0, 0, 255, 0.03) 2px,
+    transparent 3px
+  );
+  background-size: 3px 1px;
+}
+
+/* Glow/Bloom */
+.crt-glow #root {
+  filter: brightness(1.05) contrast(1.05);
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
