@@ -2,9 +2,9 @@ import { memo, useCallback } from 'react'
 import type { SequencerPattern, ContributionData } from '../types'
 
 const DEFAULT_LABELS = [
-  { name: 'Shaker', day: 'Sun' },
+  { name: 'Kick', day: 'Sun' },
   { name: 'Hat-C', day: 'Mon' },
-  { name: 'Kick', day: 'Tue' },
+  { name: 'Shaker', day: 'Tue' },
   { name: 'Snare', day: 'Wed' },
   { name: 'Hat-O', day: 'Thu' },
   { name: 'Clap', day: 'Fri' },

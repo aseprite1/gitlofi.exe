@@ -35,9 +35,9 @@ interface DrumSlot {
 }
 
 const DRUM_SLOTS: DrumSlot[] = [
-  { category: 'percussion', name: 'Shaker', dayName: 'Sun' },
+  { category: 'kicks', name: 'Kick', dayName: 'Sun' },
   { category: 'hats_closed', name: 'Hat-C', dayName: 'Mon' },
-  { category: 'kicks', name: 'Kick', dayName: 'Tue' },
+  { category: 'percussion', name: 'Shaker', dayName: 'Tue' },
   { category: 'snares', name: 'Snare', dayName: 'Wed' },
   { category: 'hats_open', name: 'Hat-O', dayName: 'Thu' },
   { category: 'claps', name: 'Clap', dayName: 'Fri' },
