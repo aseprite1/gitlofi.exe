@@ -11,28 +11,20 @@ interface Props {
   bpm: number
 }
 
-interface LayerState {
-  enabled: boolean
-  volume: number
-}
-
 interface PlayerRef {
   player: Tone.Player
   gain: Tone.Gain
   originalBpm: number
-  loaded: boolean
 }
 
 export function AmbientMixer({ minimized, onMinimize, zIndex, onFocus, bpm }: Props) {
   const [pos, setPos] = useState({ x: 0, y: 0 })
-  const [layers, setLayers] = useState<Record<string, LayerState>>(() => {
-    const init: Record<string, LayerState> = {}
-    for (const l of AMBIENT_LAYERS) {
-      init[l.id] = { enabled: false, volume: 0.5 }
-    }
+  const [enabled, setEnabled] = useState<Record<string, boolean>>({})
+  const [volumes, setVolumes] = useState<Record<string, number>>(() => {
+    const init: Record<string, number> = {}
+    for (const l of AMBIENT_LAYERS) init[l.id] = 50
     return init
   })
-  const [loadingId, setLoadingId] = useState<string | null>(null)
 
   const playersRef = useRef<Record<string, PlayerRef>>({})
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null)
@@ -41,88 +33,61 @@ export function AmbientMixer({ minimized, onMinimize, zIndex, onFocus, bpm }: Pr
   useEffect(() => {
     return () => {
       for (const ref of Object.values(playersRef.current)) {
-        ref.player.stop()
         ref.player.dispose()
         ref.gain.dispose()
       }
-      playersRef.current = {}
     }
   }, [])
 
   useEffect(() => {
     for (const layer of AMBIENT_LAYERS) {
       const ref = playersRef.current[layer.id]
-      if (ref?.loaded) {
+      if (ref?.player.loaded) {
         ref.player.playbackRate = bpm / ref.originalBpm
       }
     }
   }, [bpm])
 
-  const ensurePlayer = useCallback(async (id: string): Promise<PlayerRef> => {
-    const existing = playersRef.current[id]
-    if (existing?.loaded) return existing
+  const toggle = useCallback(async (id: string) => {
+    playClick()
+    const isOn = !!enabled[id]
 
+    if (isOn) {
+      // Turn OFF
+      const ref = playersRef.current[id]
+      if (ref) ref.gain.gain.value = 0
+      setEnabled(prev => ({ ...prev, [id]: false }))
+      return
+    }
+
+    // Turn ON
+    setEnabled(prev => ({ ...prev, [id]: true }))
+
+    const ref = playersRef.current[id]
+    if (ref) {
+      ref.gain.gain.value = (volumes[id] ?? 50) / 100
+      if (ref.player.state !== 'started') ref.player.start()
+      return
+    }
+
+    // First time — load
     const layer = AMBIENT_LAYERS.find(l => l.id === id)!
     await Tone.start()
-
-    const gain = new Tone.Gain(0).toDestination()
-    const player = new Tone.Player({
-      url: layer.path,
-      loop: true,
-    }).connect(gain)
-
+    const gain = new Tone.Gain((volumes[id] ?? 50) / 100).toDestination()
+    const player = new Tone.Player({ url: layer.path, loop: true }).connect(gain)
     await Tone.loaded()
-
     player.playbackRate = bpm / layer.bpm
+    player.start()
+    playersRef.current[id] = { player, gain, originalBpm: layer.bpm }
+  }, [enabled, volumes, bpm, playClick])
 
-    const ref: PlayerRef = { player, gain, originalBpm: layer.bpm, loaded: true }
-    playersRef.current[id] = ref
-    return ref
-  }, [bpm])
-
-  const toggleLayer = useCallback(async (id: string) => {
-    playClick()
-
-    setLayers(prev => {
-      const current = prev[id]!
-      const newEnabled = !current.enabled
-      return { ...prev, [id]: { ...current, enabled: newEnabled } }
-    })
-  }, [playClick])
-
-  // Sync player state whenever layers change
-  useEffect(() => {
-    for (const [id, state] of Object.entries(layers)) {
-      const ref = playersRef.current[id]
-
-      if (state.enabled) {
-        if (!ref || !ref.loaded) {
-          setLoadingId(id)
-          ensurePlayer(id).then(r => {
-            setLoadingId(null)
-            r.gain.gain.cancelScheduledValues(Tone.now())
-            r.gain.gain.setValueAtTime(state.volume, Tone.now())
-            if (r.player.state !== 'started') {
-              r.player.start()
-            }
-          })
-        } else {
-          ref.gain.gain.cancelScheduledValues(Tone.now())
-          ref.gain.gain.setValueAtTime(state.volume, Tone.now())
-          if (ref.player.state !== 'started') {
-            ref.player.start()
-          }
-        }
-      } else if (ref?.loaded) {
-        ref.gain.gain.cancelScheduledValues(Tone.now())
-        ref.gain.gain.linearRampToValueAtTime(0, Tone.now() + 0.15)
-      }
+  const changeVolume = useCallback((id: string, val: number) => {
+    setVolumes(prev => ({ ...prev, [id]: val }))
+    const ref = playersRef.current[id]
+    if (ref && enabled[id]) {
+      ref.gain.gain.value = val / 100
     }
-  }, [layers, ensurePlayer])
-
-  const setVolume = useCallback((id: string, volume: number) => {
-    setLayers(prev => ({ ...prev, [id]: { ...prev[id]!, volume } }))
-  }, [])
+  }, [enabled])
 
   const handleDragStart = useCallback((e: React.PointerEvent) => {
     dragRef.current = { startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y }
@@ -164,33 +129,26 @@ export function AmbientMixer({ minimized, onMinimize, zIndex, onFocus, bpm }: Pr
         </div>
       </div>
       <div style={{ padding: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {AMBIENT_LAYERS.map(layer => {
-          const state = layers[layer.id]!
-          const isLoading = loadingId === layer.id
-          return (
-            <div key={layer.id} style={styles.row}>
-              <input
-                type="checkbox"
-                checked={state.enabled}
-                onChange={() => toggleLayer(layer.id)}
-                disabled={isLoading}
-                id={`amb-${layer.id}`}
-              />
-              <label htmlFor={`amb-${layer.id}`} style={styles.label}>
-                {isLoading ? '...' : layer.name}
-              </label>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={Math.round(state.volume * 100)}
-                onChange={e => setVolume(layer.id, Number(e.target.value) / 100)}
-                disabled={!state.enabled}
-                style={{ flex: 1, minWidth: 50 }}
-              />
-            </div>
-          )
-        })}
+        {AMBIENT_LAYERS.map(layer => (
+          <div key={layer.id} style={styles.row}>
+            <input
+              type="checkbox"
+              checked={!!enabled[layer.id]}
+              onChange={() => toggle(layer.id)}
+              id={`amb-${layer.id}`}
+            />
+            <label htmlFor={`amb-${layer.id}`} style={styles.label}>{layer.name}</label>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={volumes[layer.id] ?? 50}
+              onChange={e => changeVolume(layer.id, Number(e.target.value))}
+              disabled={!enabled[layer.id]}
+              style={{ flex: 1, minWidth: 50 }}
+            />
+          </div>
+        ))}
       </div>
     </div>
   )
