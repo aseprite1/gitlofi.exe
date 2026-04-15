@@ -84,10 +84,10 @@ export function AmbientMixer({ minimized, onMinimize, zIndex, onFocus, bpm }: Pr
   const changeVolume = useCallback((id: string, val: number) => {
     setVolumes(prev => ({ ...prev, [id]: val }))
     const ref = playersRef.current[id]
-    if (ref && enabled[id]) {
+    if (ref) {
       ref.gain.gain.value = val / 100
     }
-  }, [enabled])
+  }, [])
 
   const handleDragStart = useCallback((e: React.PointerEvent) => {
     dragRef.current = { startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y }
