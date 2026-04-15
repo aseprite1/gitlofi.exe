@@ -109,7 +109,7 @@ export function AmbientMixer({ minimized, onMinimize, zIndex, onFocus, bpm }: Pr
   return (
     <div className="window" onPointerDown={onFocus} style={{
       position: 'fixed',
-      top: 60,
+      top: 250,
       left: 12,
       transform: `translate(${pos.x}px, ${pos.y}px)`,
       zIndex,
