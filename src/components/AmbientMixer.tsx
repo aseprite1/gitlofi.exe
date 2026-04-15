@@ -19,7 +19,7 @@ interface PlayerRef {
 
 export function AmbientMixer({ minimized, onMinimize, zIndex, onFocus, bpm }: Props) {
   const [pos, setPos] = useState({ x: 0, y: 0 })
-  const [enabled, setEnabled] = useState<Record<string, boolean>>({})
+  const [enabled, setEnabled] = useState<Record<string, boolean>>({ rain: true, drips: true })
   const [volumes, setVolumes] = useState<Record<string, number>>(() => {
     const init: Record<string, number> = {}
     for (const l of AMBIENT_LAYERS) init[l.id] = 50
@@ -144,7 +144,6 @@ export function AmbientMixer({ minimized, onMinimize, zIndex, onFocus, bpm }: Pr
               max={100}
               value={volumes[layer.id] ?? 50}
               onChange={e => changeVolume(layer.id, Number(e.target.value))}
-              disabled={!enabled[layer.id]}
               style={{ flex: 1, minWidth: 50 }}
             />
           </div>
