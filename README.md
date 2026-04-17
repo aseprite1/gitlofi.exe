@@ -1,6 +1,7 @@
 # gitlofi.exe
 
 > Turn your GitHub contributions into lo-fi beats
+<img width="1908" height="945" alt="image" src="https://github.com/user-attachments/assets/ea2386ee-0171-422d-8288-e403e68508cc" />
 
 A Win98-themed web app that transforms your GitHub contribution graph into a unique lo-fi hip-hop beat. Each developer's coding pattern creates a different rhythm, and your primary programming languages shape the sound profile.
 
